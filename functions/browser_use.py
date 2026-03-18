@@ -15,20 +15,22 @@ def get_headers():
 
 
 def browser_subagent(task: str, url: str | None = None) -> dict:
+    proxy = None
+    if os.environ.get("PROXY_HOST"):
+        proxy = {
+            "host": os.environ["PROXY_HOST"],
+            "port": int(os.environ["PROXY_PORT"])
+            if os.environ.get("PROXY_PORT")
+            else None,
+            "username": os.environ.get("PROXY_USER"),
+            "password": os.environ.get("PROXY_PASS"),
+        }
+
     body = {
         "task": task,
         "sessionSettings": {
             "profileId": os.environ.get("BROWSER_USE_PROFILE_ID"),
-            "customProxy": {
-                "host": os.environ.get("PROXY_HOST"),
-                "port": int(os.environ.get("PROXY_PORT", 0))
-                if os.environ.get("PROXY_PORT")
-                else None,
-                "username": os.environ.get("PROXY_USER"),
-                "password": os.environ.get("PROXY_PASS"),
-            }
-            if os.environ.get("PROXY_HOST")
-            else None,
+            "customProxy": proxy,
         },
     }
     if url:
@@ -42,11 +44,14 @@ def browser_subagent(task: str, url: str | None = None) -> dict:
 
     while True:
         time.sleep(5)
-        status = requests.get(f"{API}/tasks/{tid}/status", headers=hdr).json()["status"]
-        if status in ("finished", "stopped"):
+        r = requests.get(f"{API}/tasks/{tid}/status", headers=hdr)
+        r.raise_for_status()
+        if r.json()["status"] in ("finished", "stopped"):
             break
 
-    detail = requests.get(f"{API}/tasks/{tid}", headers=hdr).json()
+    detail_res = requests.get(f"{API}/tasks/{tid}", headers=hdr)
+    detail_res.raise_for_status()
+    detail = detail_res.json()
     os.makedirs("browser-use-traces", exist_ok=True)
     with open(f"browser-use-traces/{tid}.json", "w") as f:
         json.dump(detail, f, indent=2)

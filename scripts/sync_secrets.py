@@ -20,24 +20,28 @@ def sync(repo: str):
         "Authorization": f"token {os.environ['REPO_PAT']}",
         "Accept": "application/vnd.github+json",
     }
-    pk = requests.get(
+    pk_res = requests.get(
         f"https://api.github.com/repos/{repo}/actions/secrets/public-key", headers=hdr
-    ).json()
+    )
+    pk_res.raise_for_status()
+    pk = pk_res.json()
 
     secrets = {}
     if os.path.exists(".env"):
-        for line in open(".env"):
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, v = line.split("=", 1)
-                secrets[k.strip()] = v.strip()
+        with open(".env") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    secrets[k.strip()] = v.strip()
 
     for k, v in secrets.items():
-        requests.put(
+        res = requests.put(
             f"https://api.github.com/repos/{repo}/actions/secrets/{k}",
             headers=hdr,
             json={"encrypted_value": encrypt(pk["key"], v), "key_id": pk["key_id"]},
         )
+        res.raise_for_status()
 
     print(f"Synced {len(secrets)} secrets to {repo}")
 
