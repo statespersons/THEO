@@ -1,6 +1,6 @@
 #!/bin/bash
 set -ea
-export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$PATH"
+export PATH="/root/.opencode/bin:/root/.local/bin:$PATH"
 cd "$(dirname "$0")"
 git pull --rebase
 source .env
