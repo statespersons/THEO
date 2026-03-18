@@ -1,32 +1,62 @@
-import json, os, time, requests
+# /// script
+# requires-python = ">=3.12"
+# dependencies = [
+#     "requests",
+# ]
+# ///
+
+import argparse, json, os, time, requests
 
 API = "https://api.browser-use.com/api/v2"
-HDR = {"X-Browser-Use-API-Key": os.environ["BROWSER_USE_API_KEY"]}
+
+
+def get_headers():
+    return {"X-Browser-Use-API-Key": os.environ.get("BROWSER_USE_API_KEY", "")}
 
 
 def browser_subagent(task: str, url: str | None = None) -> dict:
-    body = {"task": task, "sessionSettings": {
-        "profileId": os.environ.get("BROWSER_USE_PROFILE_ID"),
-        "customProxy": {
-            "host": os.environ["PROXY_HOST"],
-            "port": int(os.environ["PROXY_PORT"]),
-            "username": os.environ["PROXY_USER"],
-            "password": os.environ["PROXY_PASS"],
+    body = {
+        "task": task,
+        "sessionSettings": {
+            "profileId": os.environ.get("BROWSER_USE_PROFILE_ID"),
+            "customProxy": {
+                "host": os.environ.get("PROXY_HOST"),
+                "port": int(os.environ.get("PROXY_PORT", 0))
+                if os.environ.get("PROXY_PORT")
+                else None,
+                "username": os.environ.get("PROXY_USER"),
+                "password": os.environ.get("PROXY_PASS"),
+            }
+            if os.environ.get("PROXY_HOST")
+            else None,
         },
-    }}
+    }
     if url:
         body["startUrl"] = url
 
-    tid = requests.post(f"{API}/tasks", json=body, headers=HDR).json()["id"]
+    hdr = get_headers()
+    res = requests.post(f"{API}/tasks", json=body, headers=hdr)
+    res.raise_for_status()
+    tid = res.json()["id"]
     print(f"Task {tid} started")
 
     while True:
         time.sleep(5)
-        if requests.get(f"{API}/tasks/{tid}/status", headers=HDR).json()["status"] in ("finished", "stopped"):
+        status = requests.get(f"{API}/tasks/{tid}/status", headers=hdr).json()["status"]
+        if status in ("finished", "stopped"):
             break
 
-    detail = requests.get(f"{API}/tasks/{tid}", headers=HDR).json()
+    detail = requests.get(f"{API}/tasks/{tid}", headers=hdr).json()
     os.makedirs("browser-use-traces", exist_ok=True)
-    json.dump(detail, open(f"browser-use-traces/{tid}.json", "w"), indent=2)
+    with open(f"browser-use-traces/{tid}.json", "w") as f:
+        json.dump(detail, f, indent=2)
     print(f"{detail['status']} | {detail.get('output', 'None')}")
     return detail
+
+
+if __name__ == "__main__":
+    p = argparse.ArgumentParser(description="Run a task using the browser-use API.")
+    p.add_argument("task", help="The task for the browser subagent to perform")
+    p.add_argument("--url", "-u", help="Optional starting URL", default=None)
+    a = p.parse_args()
+    browser_subagent(a.task, a.url)
