@@ -4,3 +4,4 @@
 4. Make reusable scripts with argparse
 5. Use `uv`
 6. Put all python scripts in `scripts/`
+7. Always use timeouts for network requests and fail fast for missing environment variables

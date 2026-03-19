@@ -7,7 +7,7 @@ import os
 import subprocess
 
 
-def sync(schedule_file: str, repo: str, token: str):
+def sync(schedule_file: str, repo: str, token: str) -> None:
     cron = ""
     with open(schedule_file) as f:
         for line in f:
@@ -15,9 +15,9 @@ def sync(schedule_file: str, repo: str, token: str):
             if not line:
                 continue
             time, prompt = line.split(maxsplit=1)
-            hour, min = time.split(":")
+            hour, minute = time.split(":")
             cmd = f'curl -sf -X POST -H \'Authorization: token {token}\' -H \'Accept: application/vnd.github+json\' https://api.github.com/repos/{repo}/dispatches -d \'{{"event_type":"wake","client_payload":{{"prompt":"{prompt}"}}}}\''
-            cron += f"{min} {hour} * * * {cmd}\n"
+            cron += f"{minute} {hour} * * * {cmd}\n"
 
     subprocess.run(["crontab", "-"], input=cron.encode(), check=True)
     print("Installed crontab:")

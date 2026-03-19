@@ -18,13 +18,15 @@ def encrypt(pub_key: str, value: str) -> str:
     return base64.b64encode(public.SealedBox(key).encrypt(value.encode())).decode()
 
 
-def sync(repo: str):
+def sync(repo: str) -> None:
     hdr = {
         "Authorization": f"token {os.environ['REPO_PAT']}",
         "Accept": "application/vnd.github+json",
     }
     pk_res = requests.get(
-        f"https://api.github.com/repos/{repo}/actions/secrets/public-key", headers=hdr
+        f"https://api.github.com/repos/{repo}/actions/secrets/public-key",
+        headers=hdr,
+        timeout=10,
     )
     pk_res.raise_for_status()
     pk = pk_res.json()
@@ -36,13 +38,14 @@ def sync(repo: str):
                 line = line.strip()
                 if line and not line.startswith("#") and "=" in line:
                     k, v = line.split("=", 1)
-                    secrets[k.strip()] = v.strip()
+                    secrets[k.strip()] = v.strip().strip("'\"")
 
     for k, v in secrets.items():
         res = requests.put(
             f"https://api.github.com/repos/{repo}/actions/secrets/{k}",
             headers=hdr,
             json={"encrypted_value": encrypt(pk["key"], v), "key_id": pk["key_id"]},
+            timeout=10,
         )
         res.raise_for_status()
 

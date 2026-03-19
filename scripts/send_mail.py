@@ -14,13 +14,14 @@ API = "https://api.agentmail.to/v0"
 
 def send(to: str, subject: str, body: str) -> dict:
     hdr = {
-        "Authorization": f"Bearer {os.environ.get('AGENTMAIL_API_KEY')}",
+        "Authorization": f"Bearer {os.environ['AGENTMAIL_API_KEY']}",
         "Content-Type": "application/json",
     }
     r = requests.post(
-        f"{API}/inboxes/{os.environ.get('AGENTMAIL_INBOX_ID')}/messages/send",
+        f"{API}/inboxes/{os.environ['AGENTMAIL_INBOX_ID']}/messages/send",
         headers=hdr,
         json={"to": to, "subject": subject, "text": body},
+        timeout=10,
     )
     r.raise_for_status()
     print(f"Sent: {r.json()['message_id']}")
