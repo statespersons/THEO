@@ -5,7 +5,11 @@
 # ]
 # ///
 
-import argparse, json, os, time, requests
+import argparse
+import json
+import os
+import time
+import requests
 
 API = "https://api.browser-use.com/api/v2"
 

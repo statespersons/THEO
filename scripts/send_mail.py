@@ -5,7 +5,9 @@
 # ]
 # ///
 
-import argparse, os, requests
+import argparse
+import os
+import requests
 
 API = "https://api.agentmail.to/v0"
 

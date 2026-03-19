@@ -7,7 +7,9 @@
 
 """Check Vercel AI Gateway credit balance."""
 
-import argparse, os, requests
+import argparse
+import os
+import requests
 
 
 def check() -> dict:

@@ -6,7 +6,10 @@
 # ]
 # ///
 
-import argparse, base64, os, requests
+import argparse
+import base64
+import os
+import requests
 from nacl import encoding, public
 
 

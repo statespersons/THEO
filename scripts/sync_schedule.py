@@ -2,7 +2,9 @@
 # requires-python = ">=3.12"
 # ///
 
-import argparse, os, subprocess
+import argparse
+import os
+import subprocess
 
 
 def sync(schedule_file: str, repo: str, token: str):
