@@ -25,6 +25,8 @@ def check() -> dict:
 
 
 if __name__ == "__main__":
+    if "AI_GATEWAY_API_KEY" not in os.environ:
+        raise ValueError("AI_GATEWAY_API_KEY environment variable is required")
     p = argparse.ArgumentParser(description="Check Vercel AI Gateway credit balance.")
     p.parse_args()
     check()

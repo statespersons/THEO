@@ -53,6 +53,8 @@ def sync(repo: str) -> None:
 
 
 if __name__ == "__main__":
+    if "REPO_PAT" not in os.environ:
+        raise ValueError("REPO_PAT environment variable is required")
     p = argparse.ArgumentParser(description="Sync secrets to a GitHub repository.")
     p.add_argument("repo", help="The GitHub repository (e.g., owner/repo)")
     a = p.parse_args()

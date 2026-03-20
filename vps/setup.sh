@@ -11,15 +11,15 @@ if [ -z "$TOKEN" ] || [ -z "$REPO" ]; then
 fi
 
 apt update && apt install -y git curl jq
-curl -LsSf https://astral.sh/uv/install.sh | sh
+curl -m 30 -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env
-curl -fsSL https://opencode.ai/install | bash
+curl -m 30 -fsSL https://opencode.ai/install | bash
 echo 'export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$PATH"' >> /etc/profile.d/theo.sh
 
 RUNNER_DIR=/opt/actions-runner
 mkdir -p "$RUNNER_DIR" && cd "$RUNNER_DIR"
-RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | jq -r .tag_name | sed 's/^v//')
-curl -o actions-runner.tar.gz -L "https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz"
+RUNNER_VERSION=$(curl -m 10 -s https://api.github.com/repos/actions/runner/releases/latest | jq -r .tag_name | sed 's/^v//')
+curl -m 300 -o actions-runner.tar.gz -L "https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz"
 tar xzf actions-runner.tar.gz && rm actions-runner.tar.gz
 RUNNER_ALLOW_RUNASROOT=1 ./config.sh --url "https://github.com/$REPO" --token "$TOKEN" --unattended --name theo-vps
 ./svc.sh install

@@ -16,7 +16,7 @@ def sync(schedule_file: str, repo: str, token: str) -> None:
                 continue
             time, prompt = line.split(maxsplit=1)
             hour, minute = time.split(":")
-            cmd = f'curl -sf -X POST -H \'Authorization: token {token}\' -H \'Accept: application/vnd.github+json\' https://api.github.com/repos/{repo}/dispatches -d \'{{"event_type":"wake","client_payload":{{"prompt":"{prompt}"}}}}\''
+            cmd = f'curl -m 10 -sf -X POST -H \'Authorization: token {token}\' -H \'Accept: application/vnd.github+json\' https://api.github.com/repos/{repo}/dispatches -d \'{{"event_type":"wake","client_payload":{{"prompt":"{prompt}"}}}}\''
             cron += f"{minute} {hour} * * * {cmd}\n"
 
     subprocess.run(["crontab", "-"], input=cron.encode(), check=True)

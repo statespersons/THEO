@@ -64,6 +64,8 @@ def browser_subagent(task: str, url: str | None = None) -> dict:
 
 
 if __name__ == "__main__":
+    if "BROWSER_USE_API_KEY" not in os.environ:
+        raise ValueError("BROWSER_USE_API_KEY environment variable is required")
     p = argparse.ArgumentParser(description="Run a task using the browser-use API.")
     p.add_argument("task", help="The task for the browser subagent to perform")
     p.add_argument("--url", "-u", help="Optional starting URL", default=None)

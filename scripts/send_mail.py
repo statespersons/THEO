@@ -29,6 +29,10 @@ def send(to: str, subject: str, body: str) -> dict:
 
 
 if __name__ == "__main__":
+    if "AGENTMAIL_API_KEY" not in os.environ or "AGENTMAIL_INBOX_ID" not in os.environ:
+        raise ValueError(
+            "AGENTMAIL_API_KEY and AGENTMAIL_INBOX_ID environment variables are required"
+        )
     p = argparse.ArgumentParser(description="Send an email using AgentMail API.")
     p.add_argument("to", help="Recipient email address")
     p.add_argument("subject", help="Email subject")
